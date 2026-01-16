@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
     QTableWidget,
     QTableWidgetItem,
     QHeaderView,
+    QMessageBox,
 )
 
 from app.ui.app_context import AppContext
@@ -76,26 +77,29 @@ class DashboardView(QWidget):
         self.refresh()
 
     def refresh(self):
-        today = date.today()
-        start = date(today.year, today.month, 1)
-        end = today
+        try:
+            today = date.today()
+            start = date(today.year, today.month, 1)
+            end = today
 
-        with self.ctx.open_session() as session:
-            rep = self.ctx.reports_repo(session)
+            with self.ctx.open_session() as session:
+                rep = self.ctx.reports_repo(session)
 
-            summary = rep.period_summary(start, end)
-            self.lbl_income.setText(format_rub(summary.income_cents))
-            self.lbl_expense.setText(format_rub(summary.expense_cents))
-            self.lbl_net.setText(format_rub(summary.net_cents))
+                summary = rep.period_summary(start, end)
+                self.lbl_income.setText(format_rub(summary.income_cents))
+                self.lbl_expense.setText(format_rub(summary.expense_cents))
+                self.lbl_net.setText(format_rub(summary.net_cents))
 
-            balances = rep.account_balances()
-            self._fill_table(self.balances_table, [(b.account_name, format_rub(b.balance_cents)) for b in balances])
+                balances = rep.account_balances()
+                self._fill_table(self.balances_table, [(b.account_name, format_rub(b.balance_cents)) for b in balances])
 
-            top = rep.top_expense_categories(start, end, limit=10)
-            self._fill_table(self.top_table, [(c.category_name, format_rub(c.total_cents)) for c in top])
+                top = rep.top_expense_categories(start, end, limit=10)
+                self._fill_table(self.top_table, [(c.category_name, format_rub(c.total_cents)) for c in top])
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", f"Произошла ошибка при обновлении данных: {e}")
 
     @staticmethod
-    def _fill_table(table: QTableWidget, rows: list[tuple[str, str]]):
+    def _fill_table(table: QTableWidget, rows: list[tuple[str, str]]]):
         table.setRowCount(0)
         for r, (c1, c2) in enumerate(rows):
             table.insertRow(r)

@@ -84,16 +84,19 @@ class AccountsView(QWidget):
         self.refresh()
 
     def refresh(self):
-        with self.ctx.open_session() as session:
-            repo = AccountsRepo(session)
-            items = repo.list_active()
+        try:
+            with self.ctx.open_session() as session:
+                repo = AccountsRepo(session)
+                items = repo.list_active()
 
-        self.table.setRowCount(0)
-        for r, acc in enumerate(items):
-            self.table.insertRow(r)
-            self.table.setItem(r, 0, QTableWidgetItem(str(acc.id)))
-            self.table.setItem(r, 1, QTableWidgetItem(acc.name))
-            self.table.setItem(r, 2, QTableWidgetItem(acc.type))
+            self.table.setRowCount(0)
+            for r, acc in enumerate(items):
+                self.table.insertRow(r)
+                self.table.setItem(r, 0, QTableWidgetItem(str(acc.id)))
+                self.table.setItem(r, 1, QTableWidgetItem(acc.name))
+                self.table.setItem(r, 2, QTableWidgetItem(acc.type))
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", f"Произошла ошибка при обновлении счетов: {e}")
 
     def add_account(self):
         dlg = AddAccountDialog(self)
@@ -105,12 +108,15 @@ class AccountsView(QWidget):
             QMessageBox.warning(self, "Ошибка", "Название счета не может быть пустым.")
             return
 
-        with self.ctx.open_session() as session:
-            repo = AccountsRepo(session)
-            create_account(repo, name=name, account_type=acc_type)
+        try:
+            with self.ctx.open_session() as session:
+                repo = AccountsRepo(session)
+                create_account(repo, name=name, account_type=acc_type)
 
-        self.refresh()
-        self.ctx.signals.ui_data_changed.emit()
+            self.refresh()
+            self.ctx.signals.ui_data_changed.emit()
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", f"Не удалось добавить счёт: {e}")
 
 
     def deactivate_selected(self):
@@ -125,12 +131,14 @@ class AccountsView(QWidget):
         if QMessageBox.question(self, "Подтверждение", f"Деактивировать счёт «{name}»?") != QMessageBox.StandardButton.Yes:
             return
 
-        with self.ctx.open_session() as session:
-            repo = AccountsRepo(session)
-            ok = repo.deactivate(acc_id)
+        try:
+            with self.ctx.open_session() as session:
+                repo = AccountsRepo(session)
+                ok = repo.deactivate(acc_id)
 
-        if not ok:
-            QMessageBox.warning(self, "Ошибка", "Счёт не найден.")
-        self.refresh()
-        self.ctx.signals.ui_data_changed.emit()
-
+            if not ok:
+                QMessageBox.warning(self, "Ошибка", "Счёт не найден.")
+            self.refresh()
+            self.ctx.signals.ui_data_changed.emit()
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", f"Не удалось деактивировать счёт: {e}")

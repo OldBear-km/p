@@ -76,8 +76,8 @@ class MainWindow(QMainWindow):
         self.view_accounts = AccountsView(ctx)
         self.view_tx = TransactionsView(ctx)
         self.view_budgets = BudgetsView(ctx)
-        self.view_goals = GoalsView()
-        self.view_settings = SettingsView()
+        self.view_goals = GoalsView(ctx)
+        self.view_settings = SettingsView(ctx)
 
         # ✅ Порядок добавления в stack
         self.stack.addWidget(self.view_dashboard)

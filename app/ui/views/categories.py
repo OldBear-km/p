@@ -82,23 +82,26 @@ class CategoriesView(QWidget):
         self.refresh()
 
     def refresh(self):
-        with self.ctx.open_session() as session:
-            repo = CategoriesRepo(session)
-            items = repo.list_all()
+        try:
+            with self.ctx.open_session() as session:
+                repo = CategoriesRepo(session)
+                items = repo.list_all()
 
-        kind_label_map = {
-            CategoryKind.EXPENSE.value: "Расход",
-            CategoryKind.INCOME.value: "Доход",
-            CategoryKind.SAVINGS.value: "Накопления",
-        }
+            kind_label_map = {
+                CategoryKind.EXPENSE.value: "Расход",
+                CategoryKind.INCOME.value: "Доход",
+                CategoryKind.SAVINGS.value: "Накопления",
+            }
 
-        self.table.setRowCount(0)
-        for r, cat in enumerate(items):
-            self.table.insertRow(r)
-            self.table.setItem(r, 0, QTableWidgetItem(str(cat.id)))
-            self.table.setItem(r, 1, QTableWidgetItem(kind_label_map.get(cat.kind, cat.kind)))
-            self.table.setItem(r, 2, QTableWidgetItem(cat.name))
-            self.table.setItem(r, 3, QTableWidgetItem(cat.slug))
+            self.table.setRowCount(0)
+            for r, cat in enumerate(items):
+                self.table.insertRow(r)
+                self.table.setItem(r, 0, QTableWidgetItem(str(cat.id)))
+                self.table.setItem(r, 1, QTableWidgetItem(kind_label_map.get(cat.kind, cat.kind)))
+                self.table.setItem(r, 2, QTableWidgetItem(cat.name))
+                self.table.setItem(r, 3, QTableWidgetItem(cat.slug))
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", f"Произошла ошибка при обновлении категорий: {e}")
 
     def add_category(self):
         dlg = AddCategoryDialog(self)
@@ -110,9 +113,12 @@ class CategoriesView(QWidget):
             QMessageBox.warning(self, "Ошибка", "Название категории не может быть пустым.")
             return
 
-        with self.ctx.open_session() as session:
-            repo = CategoriesRepo(session)
-            create_category(repo, kind=kind, name=name)
+        try:
+            with self.ctx.open_session() as session:
+                repo = CategoriesRepo(session)
+                create_category(repo, kind=kind, name=name)
 
-        self.refresh()
-        self.ctx.signals.ui_data_changed.emit()
+            self.refresh()
+            self.ctx.signals.ui_data_changed.emit()
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", f"Не удалось добавить категорию: {e}")
