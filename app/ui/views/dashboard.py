@@ -99,7 +99,7 @@ class DashboardView(QWidget):
             QMessageBox.critical(self, "Ошибка", f"Произошла ошибка при обновлении данных: {e}")
 
     @staticmethod
-    def _fill_table(table: QTableWidget, rows: list[tuple[str, str]]]):
+    def _fill_table(table: QTableWidget, rows: list[tuple[str, str]]):
         table.setRowCount(0)
         for r, (c1, c2) in enumerate(rows):
             table.insertRow(r)
