@@ -1,0 +1,22 @@
+# Virtual Environment
+venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# IDE settings
+.vscode/
+.idea/
+
+# Database file
+data.db
+*.db
+*.sqlite3
+*.db-journal
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
